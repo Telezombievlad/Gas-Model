@@ -98,4 +98,4 @@ if __name__ == '__main__':
 
             molecules.set_data(frames[i], face_color=cm.map(colors[i]))
 
-        writer.close()
+writer.close()

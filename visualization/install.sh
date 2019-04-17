@@ -9,4 +9,4 @@ sudo apt-get install python3-pyqt5
 # Install VisPy and imageio
 pip install --upgrade vispy imageio
 
-echo("Done")
+echo Done
