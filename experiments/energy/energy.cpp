@@ -1,4 +1,4 @@
-#include "Model.hpp"
+#include "../../model/Model.hpp"
 
 #include <random>
 
@@ -6,7 +6,7 @@ int main()
 {
 	GasModel model{1000, 1000, 1000};
 
-	// Generating speeds from a distribution: 
+	// Generating speeds from a distribution:
 	std::random_device rd{};
     std::mt19937 gen{rd()};
 

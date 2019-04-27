@@ -1,9 +1,65 @@
+.DEFAULT_GOAL := default
+
 #==================================================================================================
 # COMPILER FLAGS
 #==================================================================================================
 
 COMPILER = g++
 CCFLAGS += -std=c++17 -Werror -Wall -O3 -mavx -fno-stack-protector
+
+#==================================================================================================
+# LIBRARY INSTALLATION
+#==================================================================================================
+
+SRC = model
+
+install :
+	# Vis libraries
+	sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
+	sudo apt-get install python3-pyqt5
+	pip install --upgrade vispy imageio
+
+	# cnpy
+	git clone https://github.com/rogersce/cnpy.git model/vendor/cnpy
+	mkdir model/vendor/cnpy/build
+	cd model/vendor/cnpy/build && cmake ..
+	cd model/vendor/cnpy/build && sudo make && sudo make install
+
+	mkdir model/bin
+
+
+${SRC}/bin/model.o : ${SRC}/Model.h ${SRC}/Model.cpp
+	g++ -fPIC -c ${SRC}/Model.cpp -o ${SRC}/bin/model.o ${CCFLAGS}
+
+${SRC}/bin/dimensioning.o : ${SRC}/Dimensioning.h ${SRC}/Dimensioning.cpp
+	g++ -fPIC -c ${SRC}/Dimensioning.cpp -o ${SRC}/bin/dimensioning.o ${CCFLAGS}
+
+${SRC}/bin/save.o : ${SRC}/SavingToFile.h ${SRC}/SavingToFile.cpp
+	g++ -fPIC -c ${SRC}/SavingToFile.cpp -o ${SRC}/bin/save.o ${CCFLAGS}
+
+${SRC}/bin/libmodel.so : ${SRC}/bin/model.o ${SRC}/bin/dimensioning.o ${SRC}/bin/save.o
+	g++ -fPIC -shared -o ${SRC}/bin/libmodel.so ${SRC}/bin/model.o ${SRC}/bin/dimensioning.o ${SRC}/bin/save.o
+
+default: ${SRC}/bin/libmodel.so
+	@ echo "Library compiled."
+
+#==================================================================================================
+# EXPERIMENTS
+#==================================================================================================
+
+######### Static modeling #########
+
+MODEL_EXE  = experiments/modeling/model
+MODEL_SRC  = experiments/modeling/model.cpp
+LINK_TO_CNPY_FLAGS = -L/usr/local -lcnpy -lz
+
+compile_model : ${MODEL_SRC} ${SRC}/bin/libmodel.so
+	g++ ${MODEL_SRC} -I${SRC} -L${SRC}/bin -lmodel -o ${MODEL_EXE} ${CCFLAGS} ${LINK_TO_CNPY_FLAGS}
+
+model : compile_model
+	rm -f ${RES_COORDS} ${RES_VELOCITIES}
+	${MODEL_EXE} ${RES_COORDS} ${RES_VELOCITIES}
+
 
 #==================================================================================================
 # VISUALIZATION
@@ -26,35 +82,6 @@ demo_press : res/PRESS_coords.npy res/PRESS_velocities.npy ${VISUALIZE_SCRIPT}
 	python3 ${VISUALIZE_SCRIPT} ${RENDER_MODE} res/PRESS_coords.npy res/PRESS_velocities.npy
 
 #==================================================================================================
-# MODEL
-#==================================================================================================
-
-MODEL_EXE  = model/bin/model
-MODEL_SRC  = model/model.cpp
-MODEL_HDRS = model/Model.hpp model/SavingToFile.hpp
-
-LINK_TO_CNPY_FLAGS = -L/usr/local -lcnpy -lz
-
-install :
-	# Vis libraries
-	sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
-	sudo apt-get install python3-pyqt5
-	pip install --upgrade vispy imageio
-
-	# cnpy
-	git clone https://github.com/rogersce/cnpy.git model/vendor/cnpy
-	mkdir model/vendor/cnpy/build
-	cd model/vendor/cnpy/build && cmake ..
-	cd model/vendor/cnpy/build && sudo make && sudo make install
-
-compile : ${MODEL_SRC} ${MODEL_HDRS}
-	g++ ${MODEL_SRC} -o ${MODEL_EXE} ${CCFLAGS} ${LINK_TO_CNPY_FLAGS}
-
-model : compile
-	rm -f ${RES_COORDS} ${RES_VELOCITIES}
-	${MODEL_EXE} ${RES_COORDS} ${RES_VELOCITIES}
-
-#==================================================================================================
 # MODEL OPTIMIZATION
 #==================================================================================================
 
@@ -70,7 +97,7 @@ profile : compile_debug
 	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes ${MODEL_EXE} ${RES_COORDS} ${RES_VELOCITIES}
 
 #==================================================================================================
-# MICELLANEOUS
+# MISCELLANEOUS
 #==================================================================================================
 
 directories:

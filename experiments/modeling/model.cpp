@@ -1,5 +1,5 @@
-#include "Model.hpp"
-#include "SavingToFile.hpp"
+#include "Model.h"
+#include "SavingToFile.h"
 
 #include <random>
 #include <chrono>
@@ -8,17 +8,17 @@ int main(int argc, char* argv[])
 {
 	if (argc != 3)
 	{
-		printf("MODEL: Not enough arguments\n"); 
+		printf("MODEL: Not enough arguments\n");
 		return 1;
 	}
 
 	// Model
 	GasModel model{{1000, 1000, 1000}};
 
-	// A bit of code that saves model to file 
-	DataSaver saver{MAX_NUMBER_OF_MOLECULES}; 
+	// A bit of code that saves model to file
+	DataSaver saver{MAX_NUMBER_OF_MOLECULES};
 
-	// Generating speeds from a distribution: 
+	// Generating speeds from a distribution:
 	std::random_device rd;
 	std::mt19937 gen{rd()};
 

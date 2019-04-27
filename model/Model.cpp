@@ -1,168 +1,86 @@
-// No Copyright. Vladislav Aleinik 2019
-#ifndef GAS_MODEL_MODEL_HPP_INCLUDED
-#define GAS_MODEL_MODEL_HPP_INCLUDED
+#include "Model.h"
 
-#include <cmath>
-#include <limits>
-#include <cstdio>
+///// Vector functions
 
-#include "Dimensioning.hpp"
-
-// ToDo:
-// [X] Barnes-Hut OctTree centers of mass fillup
-// [+] Barnes-Hut Collisions
-// [+] Writing coords to .npy file
-
-// SIMULATION PROPERTIES
-const size_t MAX_NUMBER_OF_MOLECULES = 100000;
-const PhysVal_t RADIUS = 10.0;
-
-// GAS TYPES
-#define IDEAL  0
-#define BOUNCY 1
-#define GAS_TYPE BOUNCY
-
-// CALCULATION PROPERTIES
-const size_t OCT_TREE_MAX_NODES = 4 * MAX_NUMBER_OF_MOLECULES;
-const size_t OCT_TREE_MAX_SEPARTION_TRIES = ceil(log2(OCT_TREE_MAX_NODES));
-const size_t OCT_TREE_MAX_DEPTH = 10 * ceil(log2(OCT_TREE_MAX_NODES));
-
-// 3D-vector with basic arithmetic
-struct Vector
+Vector Vector::operator+(const Vector& vec) const
 {
-	PhysVal_t x, y, z;
+  return {x + vec.x, y + vec.y, z + vec.z};
+}
 
-	Vector operator+(const Vector& vec) const
-	{
-		return {x + vec.x, y + vec.y, z + vec.z};
-	}
-
-	Vector operator-(const Vector& vec) const
-	{
-		return {x - vec.x, y - vec.y, z - vec.z};
-	}
-
-	Vector& operator+=(const Vector& vec)
-	{
-		x += vec.x;
-		y += vec.y;
-		z += vec.z;
-
-		return *this;
-	}
-
-	Vector& operator-=(const Vector& vec)
-	{
-		x -= vec.x;
-		y -= vec.y;
-		z -= vec.z;
-
-		return *this;
-	}
-
-	Vector operator*(PhysVal_t k) const
-	{
-		return {k*x, k*y, k*z};
-	}
-
-	Vector& operator*=(PhysVal_t k)
-	{
-		x *= k;
-		y *= k;
-		z *= k;
-
-		return *this;
-	}
-
-	PhysVal_t lenSqr() const
-	{
-		return x*x + y*y + z*z;
-	}
-
-	PhysVal_t length() const
-	{
-		return std::sqrt(x*x + y*y + z*z);
-	}
-
-	void setLength(PhysVal_t newLen)
-	{
-		PhysVal_t curLen = length();
-
-		if (std::abs(curLen) < 10 * std::numeric_limits<PhysVal_t>::epsilon()) return;
-
-		operator*=(newLen / curLen);
-	}
-
-	PhysVal_t scalar(const Vector& v) const
-	{
-		return v.x*x + v.y*y + v.z*z;
-	}
-};
-
-// Barnes-Hut Oct-Tree
-struct OctTreeNode
+Vector Vector::operator-(const Vector& vec) const
 {
-	int octs[8];
-	int prev;
-	int molecule;
-	int count;
-	Vector centerOfMass;
-	Vector center;
+	return {x - vec.x, y - vec.y, z - vec.z};
+}
 
-	void initNode(int moleculeI, int prevI, unsigned newCount, Vector newCenter)
-	{
-		for (size_t i = 0; i < 8; ++i) octs[i] = -1;
-		prev = prevI;
-		molecule = moleculeI;
-		count = newCount;
-		centerOfMass = {0, 0, 0};
-		center = newCenter;
-	}
-};
-
-// GAS MODEL CLASS
-class GasModel
+Vector& Vector::operator+=(const Vector& vec)
 {
-public:
-	// Ctor && dtor:
-	GasModel(Vector boxSize);
-	~GasModel();
+  x += vec.x;
+  y += vec.y;
+  z += vec.z;
 
-	// System properties
-	void addMolecule(Vector coord, Vector speed);
+  return *this;
+}
 
-	// Oct-Tree Stuff
-	char calculateOct(size_t moleculeI, int curI) const;
-	void insertNode(int moleculeI, int prevI, unsigned newCount, unsigned depth, char oct);
-	void buildOctTree();
+Vector& Vector::operator-=(const Vector& vec)
+{
+  x -= vec.x;
+  y -= vec.y;
+  z -= vec.z;
 
-	// Movement:
-	void move();
+  return *this;
+}
 
-	// Collision:
-	void collideWithWalls();
-	void collideTwoMolecules(size_t i, size_t j);
-	void collideOneMoleculeBarnesHut(int moleculeI, int curI, unsigned depth);
-	void collideWithEachOtherNaive();
-	void collideWithEachOther();
+Vector Vector::operator*(PhysVal_t k) const
+{
+	return {k*x, k*y, k*z};
+}
 
-	// Simulation properties:
-	Vector boxSize;
-	size_t size;
+Vector& Vector::operator*=(PhysVal_t k)
+{
+  x *= k;
+  y *= k;
+  z *= k;
 
-	// Molecules:
-	Vector* coords;
-	Vector* speeds;
+  return *this;
+}
 
-	// Oct-Tree stuff:
-	OctTreeNode* octTree;
-	size_t octTreeSize;
-	bool octTreeFuckedUp;
-	Vector* sizeAtDepth;
+PhysVal_t Vector::lenSqr() const
+{
+	return x*x + y*y + z*z;
+}
 
-	// Make it isotropic, please!
-	unsigned tick;
-};
+PhysVal_t Vector::length() const
+{
+  return std::sqrt(x*x + y*y + z*z);
+}
+
+void Vector::setLength(PhysVal_t newLen)
+{
+	PhysVal_t curLen = length();
+
+	if (std::abs(curLen) < 10 * std::numeric_limits<PhysVal_t>::epsilon()) return;
+
+	operator*=(newLen / curLen);
+}
+
+PhysVal_t Vector::scalar(const Vector& v) const
+{
+	return v.x*x + v.y*y + v.z*z;
+}
+
+///// Barnes-Hut
+
+void OctTreeNode::initNode(int moleculeI, int prevI, unsigned newCount, Vector newCenter)
+{
+  for (size_t i = 0; i < 8; ++i) octs[i] = -1;
+  prev = prevI;
+  molecule = moleculeI;
+  count = newCount;
+  centerOfMass = {0, 0, 0};
+  center = newCenter;
+}
+
+///// Model
 
 GasModel::GasModel(Vector newBoxSize) :
 	boxSize (newBoxSize),
@@ -447,5 +365,3 @@ void GasModel::collideWithEachOther()
 			collideOneMoleculeBarnesHut(i-1, 0, 0);
 	}
 }
-
-#endif  // GAS_MODEL_MODEL_HPP_INCLUDED
