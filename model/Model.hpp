@@ -37,7 +37,7 @@ struct Vector
 		return {x + vec.x, y + vec.y, z + vec.z};
 	}
 
-	Vector operator-(const Vector& vec) const 
+	Vector operator-(const Vector& vec) const
 	{
 		return {x - vec.x, y - vec.y, z - vec.z};
 	}
@@ -59,7 +59,7 @@ struct Vector
 
 		return *this;
 	}
-	
+
 	Vector operator*(PhysVal_t k) const
 	{
 		return {k*x, k*y, k*z};
@@ -88,7 +88,7 @@ struct Vector
 	{
 		PhysVal_t curLen = length();
 
-		if (std::abs(curLen) < 10 * std::numeric_limits<PhysVal_t>::epsilon()) return; 
+		if (std::abs(curLen) < 10 * std::numeric_limits<PhysVal_t>::epsilon()) return;
 
 		operator*=(newLen / curLen);
 	}
@@ -121,7 +121,7 @@ struct OctTreeNode
 };
 
 // GAS MODEL CLASS
-class GasModel 
+class GasModel
 {
 public:
 	// Ctor && dtor:
@@ -140,12 +140,12 @@ public:
 	void move();
 
 	// Collision:
-	void collideWithWalls(); 
+	void collideWithWalls();
 	void collideTwoMolecules(size_t i, size_t j);
 	void collideOneMoleculeBarnesHut(int moleculeI, int curI, unsigned depth);
 	void collideWithEachOtherNaive();
 	void collideWithEachOther();
-	
+
 	// Simulation properties:
 	Vector boxSize;
 	size_t size;
@@ -218,7 +218,7 @@ void GasModel::move()
 inline char GasModel::calculateOct(size_t moleculeI, int curI) const
 {
 	return ((coords[moleculeI].x > octTree[curI].center.x) ? 4 : 0) +
-	       ((coords[moleculeI].y > octTree[curI].center.y) ? 2 : 0) + 
+	       ((coords[moleculeI].y > octTree[curI].center.y) ? 2 : 0) +
 	       ((coords[moleculeI].z > octTree[curI].center.z) ? 1 : 0);
 }
 
@@ -236,7 +236,7 @@ void GasModel::insertNode(int moleculeI, int prevI, unsigned newCount, unsigned 
 	                    sizeAtDepth[depth].y * ((oct & 0b00000010)? 1.0 : -1.0),
 	                    sizeAtDepth[depth].z * ((oct & 0b00000001)? 1.0 : -1.0)};
 
-	curCenter += octTree[prevI].center;	
+	curCenter += octTree[prevI].center;
 
 	octTree[octTreeSize].initNode(moleculeI, prevI, newCount, curCenter);
 
@@ -269,7 +269,7 @@ void GasModel::buildOctTree()
 		}
 
 		// Insert node
-		if (octTree[prevI].count == 2) // Tree rebalancing needed  
+		if (octTree[prevI].count == 2) // Tree rebalancing needed
 		{
 			int oldMoleculeI = octTree[prevI].molecule;
 			octTree[prevI].molecule = -1;
@@ -309,7 +309,7 @@ void GasModel::buildOctTree()
 
 void GasModel::collideWithWalls()
 {
-	for (size_t mol = 0; mol < size; ++mol) 
+	for (size_t mol = 0; mol < size; ++mol)
 	{
 		Vector cur = coords[mol];
 
@@ -346,7 +346,7 @@ void GasModel::collideWithWalls()
 			speeds[mol].z *= -1;
 		}
 
-		coords[mol] = cur;	
+		coords[mol] = cur;
 	}
 
 }
@@ -365,7 +365,7 @@ const PhysVal_t RADIUS_SQARE_x4 = 4 * RADIUS * RADIUS;
 
 		Vector centerOfMassSpeedx2 = (speeds[i] * masses[i] + speeds[j] * masses[j]) * (2/(masses[i] + masses[j]));
 		speeds[i] = centerOfMassSpeedx2 - speeds[i];
-		speeds[j] = centerOfMassSpeedx2 - speeds[j];	
+		speeds[j] = centerOfMassSpeedx2 - speeds[j];
 	}
 #elif GAS_TYPE == BOUNCY
 	void GasModel::collideTwoMolecules(size_t i, size_t j)
@@ -449,4 +449,3 @@ void GasModel::collideWithEachOther()
 }
 
 #endif  // GAS_MODEL_MODEL_HPP_INCLUDED
-

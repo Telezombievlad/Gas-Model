@@ -35,6 +35,17 @@ MODEL_HDRS = model/Model.hpp model/SavingToFile.hpp
 
 LINK_TO_CNPY_FLAGS = -L/usr/local -lcnpy -lz
 
+install :
+	# Vis libraries
+	sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
+	sudo apt-get install python3-pyqt5
+	pip install --upgrade vispy imageio
+
+	# cnpy
+	git clone https://github.com/rogersce/cnpy.git model/vendor/cnpy
+	mkdir model/vendor/cnpy/build
+	cd model/vendor/cnpy/build && cmake ..
+	cd model/vendor/cnpy/build && sudo make && sudo make install
 
 compile : ${MODEL_SRC} ${MODEL_HDRS}
 	g++ ${MODEL_SRC} -o ${MODEL_EXE} ${CCFLAGS} ${LINK_TO_CNPY_FLAGS}
@@ -48,7 +59,7 @@ model : compile
 #==================================================================================================
 
 MODEL_ASM = optimization/listing.asm
-OPTIMIZE_HDRS = model/Model.hpp model/Model_SSE.hpp model/Model_BARNES_HUT.hpp model/Model_HARDCORE.hpp 
+OPTIMIZE_HDRS = model/Model.hpp model/Model_SSE.hpp model/Model_BARNES_HUT.hpp model/Model_HARDCORE.hpp
 
 compile_debug : ${MODEL_SRC} ${MODEL_HDRS}
 	g++ ${MODEL_SRC} -S -o ${MODEL_ASM} -g ${CCFLAGS} ${LINK_TO_CNPY_FLAGS}
@@ -67,4 +78,3 @@ directories:
 
 clean:
 	rm -rf model/bin
-

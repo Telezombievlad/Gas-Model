@@ -1,9 +1,0 @@
-/home/vladik/Dropbox/Programming/2018-2019/gas/model/vendor/cnpy/build/CMakeFiles/install/strip.dir
-/home/vladik/Dropbox/Programming/2018-2019/gas/model/vendor/cnpy/build/CMakeFiles/install/local.dir
-/home/vladik/Dropbox/Programming/2018-2019/gas/model/vendor/cnpy/build/CMakeFiles/install.dir
-/home/vladik/Dropbox/Programming/2018-2019/gas/model/vendor/cnpy/build/CMakeFiles/cnpy-static.dir
-/home/vladik/Dropbox/Programming/2018-2019/gas/model/vendor/cnpy/build/CMakeFiles/cnpy.dir
-/home/vladik/Dropbox/Programming/2018-2019/gas/model/vendor/cnpy/build/CMakeFiles/list_install_components.dir
-/home/vladik/Dropbox/Programming/2018-2019/gas/model/vendor/cnpy/build/CMakeFiles/example1.dir
-/home/vladik/Dropbox/Programming/2018-2019/gas/model/vendor/cnpy/build/CMakeFiles/edit_cache.dir
-/home/vladik/Dropbox/Programming/2018-2019/gas/model/vendor/cnpy/build/CMakeFiles/rebuild_cache.dir
