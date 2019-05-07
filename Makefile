@@ -43,6 +43,8 @@ ${SRC}/bin/libmodel.so : ${SRC}/bin/model.o ${SRC}/bin/dimensioning.o ${SRC}/bin
 default: ${SRC}/bin/libmodel.so
 	@ echo "Library compiled."
 
+#set -x LD_LIBRARY_PATH /home/max/Documents/MIPT/GasSim/Gas-Model/model/bin $LD_LIBRARY_PATH
+
 #==================================================================================================
 # EXPERIMENTS
 #==================================================================================================
@@ -60,6 +62,13 @@ model : compile_model
 	rm -f ${RES_COORDS} ${RES_VELOCITIES}
 	${MODEL_EXE} ${RES_COORDS} ${RES_VELOCITIES}
 
+######### Energy conservation #########
+
+ENERGY_EXE = experiments/energy/en
+ENERGY_SRC = experiments/energy/energy.cpp
+
+compile_energy : ${ENERGY_SRC} ${SRC}/bin/libmodel.so
+	g++ ${ENERGY_SRC} -I${SRC} -I${SRC}/vendor/cnpy -L${SRC}/bin -lmodel -o ${ENERGY_EXE} ${CCFLAGS} ${LINK_TO_CNPY_FLAGS}
 
 #==================================================================================================
 # VISUALIZATION
