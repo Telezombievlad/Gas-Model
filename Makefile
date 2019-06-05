@@ -2,7 +2,6 @@
 # COMPILER FLAGS
 #==================================================================================================
 
-COMPILER = g++
 CCFLAGS += -std=c++17 -Werror -Wall -O3 -mavx -fno-stack-protector
 
 #==================================================================================================
@@ -11,6 +10,7 @@ CCFLAGS += -std=c++17 -Werror -Wall -O3 -mavx -fno-stack-protector
 
 RES_COORDS     = res/coords.npy
 RES_VELOCITIES = res/velocities.npy
+RES_TYPES      = res/types.npy
 
 VISUALIZE_SCRIPT = visualization/mol_vis.py
 
@@ -35,13 +35,12 @@ MODEL_HDRS = model/Model.hpp model/SavingToFile.hpp
 
 LINK_TO_CNPY_FLAGS = -L/usr/local -lcnpy -lz
 
-
 compile : ${MODEL_SRC} ${MODEL_HDRS}
 	g++ ${MODEL_SRC} -o ${MODEL_EXE} ${CCFLAGS} ${LINK_TO_CNPY_FLAGS}
 
 model : compile
 	rm -f ${RES_COORDS} ${RES_VELOCITIES}
-	${MODEL_EXE} ${RES_COORDS} ${RES_VELOCITIES}
+	${MODEL_EXE} ${RES_COORDS} ${RES_VELOCITIES} ${RES_TYPES}
 
 #==================================================================================================
 # MODEL OPTIMIZATION
@@ -55,8 +54,8 @@ compile_debug : ${MODEL_SRC} ${MODEL_HDRS}
 	g++ ${MODEL_SRC}    -o ${MODEL_EXE} -g ${CCFLAGS} ${LINK_TO_CNPY_FLAGS}
 
 profile : compile_debug
-	rm -f ${RES_COORDS} ${RES_VELOCITIES}
-	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes ${MODEL_EXE} ${RES_COORDS} ${RES_VELOCITIES}
+	rm -f ${RES_COORDS} ${RES_VELOCITIES} ${RES_TYPES}
+	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes ${MODEL_EXE} ${RES_COORDS} ${RES_VELOCITIES} ${RES_TYPES}
 
 #==================================================================================================
 # MICELLANEOUS

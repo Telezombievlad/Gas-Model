@@ -46,7 +46,7 @@ if __name__ == '__main__':
     colors = np.load( args.colors )
 
     colors /= colors.max()
-    cm = vispy.color.Colormap(['yellow', 'orange', 'red'], [0, 0.5, 1])
+    cm = vispy.color.Colormap(['yellow', 'orange', 'red'], [0, 0.6, 1])
 
     # Bureaucracy
 
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     molecules.set_data(frames[0], face_color=cm.map(colors[0]))
 
     cz = args.cubesize
-    borders = scene.visuals.Cube((cz, cz, cz), color=[0.1, 0.1, 0.1, 0.3],
+    borders = scene.visuals.Cube((cz, cz, cz), color=[0.1, 0.1, 0.1, 0.1],
                                edge_color='black', parent=view.scene)
 
     ## Interactive animation
