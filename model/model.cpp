@@ -15,9 +15,9 @@ int main(int argc, char* argv[])
 	}
 
 	// Model
-	GasModel model = GasModel({SI_2_Model(1000.0,  0, 1, 0),
-	                           SI_2_Model(1000.0,  0, 1, 0),
-	                           SI_2_Model(1000.0,  0, 1, 0)});
+	GasModel model = GasModel({SI_2_Model(1e3,  0, 1, 0),
+	                           SI_2_Model(1e3,  0, 1, 0),
+	                           SI_2_Model(1e3,  0, 1, 0)});
 
 	// This object saves data to file
 	DataSaver saver{MAX_NUMBER_OF_MOLECULES}; 
@@ -26,9 +26,9 @@ int main(int argc, char* argv[])
 	std::random_device rd;
 	std::mt19937 gen{rd()};
 
-	std::normal_distribution<PhysVal_t>       speeds1{SI_2_Model( 0.0, -1, 1, 0), SI_2_Model(  5.0, -1, 1, 0)};
-	std::uniform_real_distribution<PhysVal_t> coords1{SI_2_Model( 5.0,  0, 1, 0), SI_2_Model( 10.0,  0, 1, 0)};
-	std::uniform_real_distribution<PhysVal_t> coords2{SI_2_Model(50.0,  0, 1, 0), SI_2_Model(950.0,  0, 1, 0)};
+	std::normal_distribution<PhysVal_t>       speeds1{SI_2_Model( 0.0, -1, 1, 0), SI_2_Model(2.5e13, -1, 1, 0)};
+	std::uniform_real_distribution<PhysVal_t> coords1{SI_2_Model( 5.0,  0, 1, 0), SI_2_Model(  10.0, 0, 1, 0)};
+	std::uniform_real_distribution<PhysVal_t> coords2{SI_2_Model(50.0,  0, 1, 0), SI_2_Model(  10e3, 0, 1, 0)};
 
 	// Filling array of molecules
 	for (size_t i = 0; i < MAX_NUMBER_OF_MOLECULES; ++i)
@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 	auto begin = clock.now();
 
 	// THE SIMULATION
-	for (size_t i = 0; i < 900; ++i)
+	for (size_t i = 0; i < 1000; ++i)
 	{
 		// model.boxSize.x = 1000 + 800*sin(0.02*i);
 		

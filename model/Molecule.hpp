@@ -22,13 +22,9 @@ public:
 	Vector acceleration;
 	MoleculeType type;
 
-	inline void move()
+	inline void integrationStep()
 	{
-		coords += speed;
-	}
-
-	inline void accelerate()
-	{
+		coords += speed + acceleration * 0.5;
 		speed += acceleration;
 		acceleration = {0, 0, 0};
 	}

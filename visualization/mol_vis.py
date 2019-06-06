@@ -46,7 +46,7 @@ if __name__ == '__main__':
     colors = np.load( args.colors )
 
     colors /= colors.max()
-    cm = vispy.color.Colormap(['yellow', 'orange', 'red'], [0, 0.6, 1])
+    cm = vispy.color.Colormap(['lightblue', 'lightgreen', 'lightyellow', 'orange', 'red'], [0, 0.1, 0.3, 0.4, 1])
 
     # Bureaucracy
 

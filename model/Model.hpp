@@ -311,15 +311,12 @@ void GasModel::interactWithEachOther()
 void GasModel::iterationCycle()
 {
 	for (size_t i = 0; i < moleculeCount; ++i)
-		molecules[i].move();
+		molecules[i].integrationStep();
 
 	interactWithEachOther();
 
 	for (size_t i = 0; i < moleculeCount; ++i)
-	{
-		molecules[i].accelerate();
 		box.moleculeBounce(molecules[i]);
-	}
 }
 
 #endif  // GAS_MODEL_MODEL_HPP_INCLUDED
