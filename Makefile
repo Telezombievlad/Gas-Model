@@ -70,6 +70,14 @@ ENERGY_SRC = experiments/energy/energy.cpp
 compile_energy : ${ENERGY_SRC} ${SRC}/bin/libmodel.so
 	g++ ${ENERGY_SRC} -I${SRC} -I${SRC}/vendor/cnpy -L${SRC}/bin -lmodel -o ${ENERGY_EXE} ${CCFLAGS} ${LINK_TO_CNPY_FLAGS}
 
+######### Iso Processes #########
+
+PROCESS_EXE = experiments/isoproc/iso
+PROCESS_SRC = experiments/isoproc/isoproc.cpp
+
+compile_iso: ${PROCESS_SRC} ${SRC}/bin/libmodel.so
+	g++ ${PROCESS_SRC} -I${SRC} -I${SRC}/vendor/cnpy -L${SRC}/bin -lmodel -o ${PROCESS_EXE} ${CCFLAGS} ${LINK_TO_CNPY_FLAGS}
+
 #==================================================================================================
 # VISUALIZATION
 #==================================================================================================
