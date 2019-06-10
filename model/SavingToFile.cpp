@@ -15,7 +15,7 @@ DataSaver::DataSaver(size_t count) :
 DataSaver::~DataSaver()
 {
 	delete[] coords;
-	delete[] velocities;
+	delete[] velocities; 
 }
 
 void DataSaver::writeFrame(const GasModel& model, const char* coordsFile, const char* velocitiesFile)
@@ -49,5 +49,5 @@ void DataSaver::writeMoleculeTypes(const GasModel& model, const char* typesFile)
 		moleculeTypes[i] = model.molecules[i].type;
 	}
 
-	cnpy::npy_save(typesFile, moleculeTypes, {moleculeCount}, "a");
+	cnpy::npy_save(typesFile, moleculeTypes, {moleculeCount}, "w");  
 }

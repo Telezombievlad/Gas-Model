@@ -16,8 +16,8 @@ PhysVal_t LennardJonesB(MoleculeType typeA, MoleculeType typeB)
 PhysVal_t LennardJonesForce(MoleculeType typeA, MoleculeType typeB, PhysVal_t distance)
 {
 	// Below 2^(1/6) * <sum of radiuses> force rockets to infinity 
-	PhysVal_t cutoffDistance = 1.12 * (COLLISION_RADIUS[typeA] + COLLISION_RADIUS[typeB]);
-	if (distance < cutoffDistance) distance = cutoffDistance;
+	PhysVal_t cutoffDistance = 1.001 * COLLISION_RADIUS[typeA] + COLLISION_RADIUS[typeB];
+	if (distance < cutoffDistance) return 0.0;
 
 	size_t pairIndex = typeA * TYPES_COUNT + typeB;
 

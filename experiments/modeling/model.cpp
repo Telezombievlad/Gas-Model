@@ -12,6 +12,7 @@ int main(int argc, char* argv[])
 	if (argc != 4)
 	{
 		printf("MODEL: Not enough arguments\n");
+		printf("Call pattern: model <.npy coordinates> <.npy velocities> <.npy molecule types>\n");
 		return 1;
 	}
 
@@ -29,7 +30,7 @@ int main(int argc, char* argv[])
 
 	std::normal_distribution<PhysVal_t>       speeds1{SAS_2_Model( 0.0, -1, 1, 0), SAS_2_Model(2.5e13, -1, 1, 0)};
 	std::uniform_real_distribution<PhysVal_t> coords1{SAS_2_Model( 5.0,  0, 1, 0), SAS_2_Model(  10.0,  0, 1, 0)};
-	std::uniform_real_distribution<PhysVal_t> coords2{SAS_2_Model(50.0,  0, 1, 0), SAS_2_Model(  1e3,  0, 1, 0)};
+	std::uniform_real_distribution<PhysVal_t> coords2{SAS_2_Model(50.0,  0, 1, 0), SAS_2_Model(   1e3,  0, 1, 0)};
 
 	// Filling array of molecules
 	for (size_t i = 0; i < MAX_NUMBER_OF_MOLECULES; ++i)
@@ -62,5 +63,7 @@ int main(int argc, char* argv[])
 	std::chrono::nanoseconds diff = end - begin;
 
 	printf("SIMULATION TIME = %9.3f ms\n", diff.count() * 0.000001);
+
+	return EXIT_SUCCESS;
 }
 

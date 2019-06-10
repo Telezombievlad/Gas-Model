@@ -25,7 +25,8 @@ void moleculesCollide(Molecule& molA, Molecule& molB)
 
 	// Shift out of collision:
 	coordDiff.setLength(COLLISION_RADIUS[molA.type] + COLLISION_RADIUS[molB.type]);
-	molA.coords = molB.coords + coordDiff;
+	molA.coords = (molA.coords + molB.coords + coordDiff)/2;
+	molB.coords = molA.coords - coordDiff;
 
 	Vector centerOfMassSpeedx2 = /*2*(m1v1+m2v2)/(m1+m2)*/
 		(molA.speed * MASSES[molA.type] + molB.speed * MASSES[molB.type]) * (2/(MASSES[molA.type] + MASSES[molB.type]));
@@ -41,7 +42,8 @@ void moleculesCollide(Molecule& molA, Molecule& molB)
 	// Shift out of collision:
 	PhysVal_t radiusSum = COLLISION_RADIUS[molA.type] + COLLISION_RADIUS[molB.type];
 	coordDiff.setLength(radiusSum);
-	molA.coords = molB.coords + coordDiff;
+	molA.coords = (molA.coords + molB.coords + coordDiff)/2;
+	molB.coords = molA.coords - coordDiff;
 
 	Vector speedDiffProj = 
 		coordDiff * (coordDiff.scalar(molA.speed - molB.speed) / (radiusSum * radiusSum));

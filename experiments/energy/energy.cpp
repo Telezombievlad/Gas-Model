@@ -62,6 +62,6 @@ int main(int argc, char * argv[]) {
 
 	long unsigned int size = num_steps / display_step;
 
-	cnpy::npy_save("experiments/energy/kinetic.npy", &res[0], {1, size}, "a");
+	cnpy::npy_save("experiments/energy/kinetic.npy", &res[0], {1, size}, "w");
 
 }

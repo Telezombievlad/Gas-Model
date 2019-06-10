@@ -85,14 +85,7 @@ inline void Vector::setLength(PhysVal_t newLen)
 {
 	PhysVal_t curLen = length();
 
-	if (std::abs(curLen) < 10 * std::numeric_limits<PhysVal_t>::epsilon())
-	{
-		x = curLen;
-		y = 0;
-		z = 0;
-
-		return;
-	}
+	if (std::abs(curLen) < 10 * std::numeric_limits<PhysVal_t>::epsilon()) return;
 
 	operator*=(newLen / curLen);
 }
