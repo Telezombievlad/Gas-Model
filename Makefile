@@ -42,7 +42,7 @@ ${SRC}/bin/unity.o : ${HEADERS} ${SOURCES}
 ${SRC}/bin/libmodel.so : ${SRC}/bin/unity.o
 	g++ -fPIC -shared ${CCFLAGS} -o ${SRC}/bin/libmodel.so ${SRC}/bin/unity.o
 
-buildlib: ${SRC}/bin/libmodel.so         
+buildlib: ${SRC}/bin/libmodel.so
 	@ echo "Library compiled!"
 
 LINK_TO_CNPY_FLAGS = -L/usr/local -lcnpy -lz
@@ -54,7 +54,7 @@ LINK_TO_MODEL = -L${SRC_ABS}/bin -Wl,-rpath=${SRC_ABS}/bin -lmodel
 
 VISUALIZE_SCRIPT = visualization/mol_vis.py
 
-RENDER_MODE = --cubesize 500 --realtime 1
+RENDER_MODE = --cubesize 10000x1000x1000 --realtime 1 --showtemp 0
 
 #==================================================================================================
 # EXPERIMENTS
@@ -93,7 +93,7 @@ ENERGY_DISLAY_EVERY = 1
 energy : energy_compile
 	${ENERGY_EXE} ${ENERGY_MOLECULES} ${ENERGY_STEPS} ${ENERGY_DISLAY_EVERY}
 
-demo_energy : 
+demo_energy :
 	echo "Energy visualization not done yet"
 
 ######### Iso Processes #########
@@ -122,15 +122,37 @@ DIFF_GRADS_AR   = experiments/diffusion/gradsAr.npy
 diffusion_compile : ${DIFF_SRC} ${SRC}/bin/libmodel.so
 	g++ -g ${CCFLAGS} ${DIFF_SRC} -I${SRC} -I${SRC}/vendor/cnpy -o ${DIFF_EXE} ${LINK_TO_MODEL} ${LINK_TO_CNPY_FLAGS}
 
-DIFF_ARGS = ${DIFF_COORDS} ${DIFF_VELOCITIES} ${DIFF_TYPES}    \
-            ${DIFF_CONC_HE} ${DIFF_CONC_AR} ${DIFF_FLUXES_HE}  \
-            ${DIFF_FLUXES_AR} ${DIFF_GRADS_HE} ${DIFF_GRADS_AR}
-diffusion : diffusion_compile
-	rm -f ${DIFF_ARGS}
-	${DIFF_EXE} ${DIFF_ARGS}
+DIFF_ARGS_1 = ${DIFF_COORDS}_1 ${DIFF_VELOCITIES}_1 ${DIFF_TYPES}_1    \
+            ${DIFF_CONC_HE}_1 ${DIFF_CONC_AR}_1 ${DIFF_FLUXES_HE}_1  \
+            ${DIFF_FLUXES_AR}_1 ${DIFF_GRADS_HE}_1 ${DIFF_GRADS_AR}_1
+DIFF_ARGS_2 = ${DIFF_COORDS}_2 ${DIFF_VELOCITIES}_2 ${DIFF_TYPES}_2    \
+            ${DIFF_CONC_HE}_2 ${DIFF_CONC_AR}_2 ${DIFF_FLUXES_HE}_2  \
+            ${DIFF_FLUXES_AR}_2 ${DIFF_GRADS_HE}_2 ${DIFF_GRADS_AR}_2
+DIFF_ARGS_3 = ${DIFF_COORDS}_3 ${DIFF_VELOCITIES}_3 ${DIFF_TYPES}_3    \
+            ${DIFF_CONC_HE}_3 ${DIFF_CONC_AR}_3 ${DIFF_FLUXES_HE}_3  \
+            ${DIFF_FLUXES_AR}_3 ${DIFF_GRADS_HE}_3 ${DIFF_GRADS_AR}_3
+DIFF_ARGS_4 = ${DIFF_COORDS}_4 ${DIFF_VELOCITIES}_4 ${DIFF_TYPES}_4    \
+            ${DIFF_CONC_HE}_4 ${DIFF_CONC_AR}_4 ${DIFF_FLUXES_HE}_4  \
+            ${DIFF_FLUXES_AR}_4 ${DIFF_GRADS_HE}_4 ${DIFF_GRADS_AR}_4
+
+diffusion_1 : diffusion_compile
+	rm -f ${DIFF_ARGS_1}
+	${DIFF_EXE} ${DIFF_ARGS_1}
+
+diffusion_2 : diffusion_compile
+	rm -f ${DIFF_ARGS_2}
+	${DIFF_EXE} ${DIFF_ARGS_2}
+
+diffusion_3 : diffusion_compile
+	rm -f ${DIFF_ARGS_3}
+	${DIFF_EXE} ${DIFF_ARGS_3}
+
+diffusion_4 : diffusion_compile
+	rm -f ${DIFF_ARGS_4}
+	${DIFF_EXE} ${DIFF_ARGS_4}
 
 diffusion_visualize :
-	python3 ${VISUALIZE_SCRIPT} ${RENDER_MODE} ${DIFF_COORDS} ${DIFF_VELOCITIES}
+	python3 ${VISUALIZE_SCRIPT} ${DIFF_COORDS} ${DIFF_VELOCITIES} ${DIFF_TYPES} ${RENDER_MODE}
 
 #==================================================================================================
 # OPTIMIZATION
