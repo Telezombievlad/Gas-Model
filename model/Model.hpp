@@ -13,7 +13,7 @@
 #define POTENTIAL 2
 #define GAS_TYPE POTENTIAL
 
-const size_t MAX_NUMBER_OF_MOLECULES = 10000;
+const size_t MAX_NUMBER_OF_MOLECULES = 20000;
 using PhysVal_t = double;
 
 //==============================================
@@ -74,6 +74,12 @@ public:
 	size_t octTreeSize;
 	bool octTreeFuckedUp;
 	Vector* sizeAtDepth;
+
+	// Energy Loss Fix-Up Hot-Fix:
+	PhysVal_t prevTotalEnergy;
+	PhysVal_t currPotentialEnergy;
+	bool prevTotalEnergyCalculated;
+	void fixEnergy();
 };
 
 #endif  // GAS_MODEL_MODEL_HPP_INCLUDED

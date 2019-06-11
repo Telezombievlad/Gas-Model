@@ -2,17 +2,17 @@
 #include "Molecule.hpp"
 
 Molecule::Molecule(Vector newCoords, Vector newSpeed, MoleculeType newType) :
-	coords       (newCoords),
-	speed        (newSpeed),
-	acceleration ({0, 0, 0}),
-	type         (newType)
+	coords (newCoords),
+	speed  (newSpeed),
+	force  ({0, 0, 0}),
+	type   (newType)
 {}
 
 inline void Molecule::integrationStep()
 {
-	coords += speed + acceleration * 0.5;
-	speed += acceleration;
-	acceleration = {0, 0, 0};
+	coords += speed + force / (2 * MASSES[type]);
+	speed += force/MASSES[type];
+	force = {0, 0, 0};
 }
 
 void moleculesCollide(Molecule& molA, Molecule& molB)
@@ -56,7 +56,7 @@ void moleculesCollide(Molecule& molA, Molecule& molB)
 #endif
 }
 
-void moleculesAttract(Molecule& molA, Molecule& molB)
+void moleculesAttract(PhysVal_t& potEnergy, Molecule& molA, Molecule& molB)
 {
 #if GAS_TYPE == IDEAL_GAS || GAS_TYPE == BOUNCY
 
@@ -67,13 +67,13 @@ void moleculesAttract(Molecule& molA, Molecule& molB)
 	Vector coordDiff = molA.coords - molB.coords;
 	if (coordDiff.lenSqr() > POTENTIAL_CUTOFF_MAX_RADIUS_SQUAREx4) return;
 
-	PhysVal_t forceMod = LennardJonesForce(molA.type, molB.type, coordDiff.length());
-
 	Vector force = coordDiff;
-	force.setLength(forceMod);
+	force.setLength(LennardJonesForce(molA.type, molB.type, coordDiff.length()));
 
-	molA.acceleration -= force / MASSES[molA.type];
-	molB.acceleration += force / MASSES[molB.type];
+	molA.force -= force;
+	molB.force += force;
+
+	potEnergy += LennardJonesPotential(molA.type, molB.type, coordDiff.length());
 
 #else
 	static_assert(false, "moleculesInteract: Unknown gas type: GAS_TYPE should be IDEAL_GAS, BOUNCY or POTENTIAL\n");

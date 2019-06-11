@@ -7,11 +7,13 @@
 #include <numeric>
 #include <random>
 
-const size_t MOLECULES        = MAX_NUMBER_OF_MOLECULES;
-const size_t ITERATIONS       = 1000000;
-const size_t SAVE_FRAME_EVERY = 1000;
-const size_t SAVE_EVERY       = 1000;
-const size_t BIN_COUNT        = 10;
+const PhysVal_t TEMPERATURE      = 300/*K*/;
+const size_t    MOLECULES        = MAX_NUMBER_OF_MOLECULES/4;
+const size_t    ITERATIONS       = 10000;
+const size_t    SAVE_FRAME_EVERY = 10;
+const size_t    SAVE_DATA_EVERY  = 100;
+const size_t    BIN_COUNT        = 10;
+const size_t    FIX_T_EVERY      = 100;
 
 int main(int argc, char* argv[])
 {
@@ -25,24 +27,29 @@ int main(int argc, char* argv[])
 	}
 
 	// Model
-	const PhysVal_t ACTUAL_BOX_SIZE = 1e3;
-	const PhysVal_t BOX_SIZE = SAS_2_Model(ACTUAL_BOX_SIZE, 0, 1, 0);
-	GasModel model = GasModel({BOX_SIZE, BOX_SIZE, BOX_SIZE});
+	const PhysVal_t ACTUAL_BOX_SIZE_X  = 10e3;
+	const PhysVal_t ACTUAL_BOX_SIZE_YZ = 1e3;
+	const PhysVal_t ACTUAL_BOX_VOLUME  = ACTUAL_BOX_SIZE_X * std::pow(ACTUAL_BOX_SIZE_YZ, 2);
+	const PhysVal_t BOX_SIZE_X  = SAS_2_Model(ACTUAL_BOX_SIZE_X , 0, 1, 0);
+	const PhysVal_t BOX_SIZE_YZ = SAS_2_Model(ACTUAL_BOX_SIZE_YZ, 0, 1, 0);
+	GasModel model = GasModel({BOX_SIZE_X, BOX_SIZE_YZ, BOX_SIZE_YZ});
 
 	// Generating speeds and coordinates:
 	std::random_device rd;
 	std::mt19937 gen{rd()};
 
-	const PhysVal_t temp = 300/*K*/;
-	const PhysVal_t sigmaHe = SAS_2_Model(std::sqrt(1.38e-23*temp/(1.67e-27*MASSES[HELIUM])) * 1e-10, -1, 1, 0);
-	const PhysVal_t sigmaAr = SAS_2_Model(std::sqrt(1.38e-23*temp/(1.67e-27*MASSES[ ARGON])) * 1e-10, -1, 1, 0);	
+	static const PhysVal_t BOLTZMANN_K       = 1.38e-23;
+	static const PhysVal_t ATOMIC_MASS_IN_KG = 1.67e-27;
+
+	const PhysVal_t sigmaHe = SAS_2_Model(std::sqrt(BOLTZMANN_K*TEMPERATURE/(ATOMIC_MASS_IN_KG*MASSES[HELIUM])) * 1e10, -1, 1, 0);
+	const PhysVal_t sigmaAr = SAS_2_Model(std::sqrt(BOLTZMANN_K*TEMPERATURE/(ATOMIC_MASS_IN_KG*MASSES[ ARGON])) * 1e10, -1, 1, 0);	
 
 	std::normal_distribution<PhysVal_t> speedPrjHe{0, sigmaHe};
 	std::normal_distribution<PhysVal_t> speedPrjAr{0, sigmaAr};
 
-	std::uniform_real_distribution<PhysVal_t> coordsXHe{0.0*BOX_SIZE, 0.5*BOX_SIZE};
-	std::uniform_real_distribution<PhysVal_t> coordsXAr{0.5*BOX_SIZE, 1.0*BOX_SIZE};
-	std::uniform_real_distribution<PhysVal_t> coordsYZ {0, BOX_SIZE};	
+	std::uniform_real_distribution<PhysVal_t> coordsXHe{0.0*BOX_SIZE_X, 0.5*BOX_SIZE_X};
+	std::uniform_real_distribution<PhysVal_t> coordsXAr{0.5*BOX_SIZE_X, 1.0*BOX_SIZE_X};
+	std::uniform_real_distribution<PhysVal_t> coordsYZ {0, BOX_SIZE_YZ};	
 
 	// Filling array of molecules
 	for (size_t i = 0; i < MOLECULES/2; ++i)
@@ -92,6 +99,9 @@ int main(int argc, char* argv[])
 	// THE SIMULATION
 	for (size_t iter = 0; iter <= ITERATIONS; ++iter)
 	{
+		if (iter % FIX_T_EVERY == 0)
+			model.fixEnergy();
+
 		if (iter % SAVE_FRAME_EVERY == 0)
 		{
 			printf("\r[DIFFUSION] %03zu%%", 100*iter/ITERATIONS);
@@ -103,7 +113,7 @@ int main(int argc, char* argv[])
 		if (iter % SAVE_FRAME_EVERY == 0)
 			saver.writeFrame(model, argv[1], argv[2]);
 
-		if (iter % SAVE_EVERY == 0)
+		if (iter % SAVE_DATA_EVERY == 0)
 		{
 			// Filling arrays
 			countsHePrv = countsHeCur;
@@ -114,7 +124,7 @@ int main(int argc, char* argv[])
 			
 			for (size_t mol = 0; mol < MOLECULES; ++mol)
 			{
-				size_t index = lround(floor(10 * model.molecules[mol].coords.x / BOX_SIZE)) % 10;
+				size_t index = lround(floor(10 * model.molecules[mol].coords.x / BOX_SIZE_X)) % 10;
 
 				if (model.molecules[mol].type == HELIUM) countsHeCur[index] += 1;
 				else                                     countsArCur[index] += 1;
@@ -136,11 +146,11 @@ int main(int argc, char* argv[])
 			}
 
 			// Bringing data back to normal dimensions
-			fluxesHe /= std::pow(ACTUAL_BOX_SIZE, 2) * (TIME_DELTA * SAVE_EVERY);
-			fluxesAr /= std::pow(ACTUAL_BOX_SIZE, 2) * (TIME_DELTA * SAVE_EVERY);
+			fluxesHe /= std::pow(ACTUAL_BOX_SIZE_YZ, 2) * (TIME_DELTA * SAVE_DATA_EVERY);
+			fluxesAr /= std::pow(ACTUAL_BOX_SIZE_YZ, 2) * (TIME_DELTA * SAVE_DATA_EVERY);
 
-			gradsHe /= std::pow(ACTUAL_BOX_SIZE, 3) * (ACTUAL_BOX_SIZE / BIN_COUNT);
-			gradsAr /= std::pow(ACTUAL_BOX_SIZE, 3) * (ACTUAL_BOX_SIZE / BIN_COUNT);			
+			gradsHe /= ACTUAL_BOX_VOLUME * (ACTUAL_BOX_SIZE_X / BIN_COUNT);
+			gradsAr /= ACTUAL_BOX_VOLUME * (ACTUAL_BOX_SIZE_X / BIN_COUNT);			
 
 			// Saving stuff to file
 			for (size_t i = 0; i < BIN_COUNT; ++i)
@@ -151,8 +161,8 @@ int main(int argc, char* argv[])
 					fprintf(concentrationsArHandle, ", ");
 				}
 
-				fprintf(concentrationsHeHandle, "%f", countsHeCur[i] / std::pow(ACTUAL_BOX_SIZE, 3));
-				fprintf(concentrationsArHandle, "%f", countsArCur[i] / std::pow(ACTUAL_BOX_SIZE, 3));	
+				fprintf(concentrationsHeHandle, "%e", countsHeCur[i] / ACTUAL_BOX_VOLUME);
+				fprintf(concentrationsArHandle, "%e", countsArCur[i] / ACTUAL_BOX_VOLUME);	
 			}
 
 			fprintf(concentrationsHeHandle, "\n");

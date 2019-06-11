@@ -58,28 +58,49 @@ const PhysVal_t BOND_ENERGY[TYPES_COUNT_SQR] =
 	SAS_2_Model(9.92e25, -2, 2, 1)  // Ar Ar
 };
 
-PhysVal_t LennardJonesA(MoleculeType typeA, MoleculeType typeB);
-PhysVal_t LennardJonesB(MoleculeType typeA, MoleculeType typeB);
+PhysVal_t LennardJonesForceA(MoleculeType typeA, MoleculeType typeB);
+PhysVal_t LennardJonesForceB(MoleculeType typeA, MoleculeType typeB);
 
-const PhysVal_t LENNARD_JONES_A[TYPES_COUNT_SQR] = 
+PhysVal_t LennardJonesPotentialA(MoleculeType typeA, MoleculeType typeB);
+PhysVal_t LennardJonesPotentialB(MoleculeType typeA, MoleculeType typeB);
+
+const PhysVal_t LENNARD_JONES_FORCE_A[TYPES_COUNT_SQR] = 
 {
-	LennardJonesA(HELIUM, HELIUM),
-	LennardJonesA(HELIUM,  ARGON),
-	LennardJonesA( ARGON, HELIUM),
-	LennardJonesA( ARGON,  ARGON)
+	LennardJonesForceA(HELIUM, HELIUM),
+	LennardJonesForceA(HELIUM,  ARGON),
+	LennardJonesForceA( ARGON, HELIUM),
+	LennardJonesForceA( ARGON,  ARGON)
 };
 
-const PhysVal_t LENNARD_JONES_B[TYPES_COUNT_SQR] = 
+const PhysVal_t LENNARD_JONES_FORCE_B[TYPES_COUNT_SQR] = 
 {
-	LennardJonesB(HELIUM, HELIUM),
-	LennardJonesB(HELIUM,  ARGON),
-	LennardJonesB( ARGON, HELIUM),
-	LennardJonesB( ARGON,  ARGON)
+	LennardJonesForceB(HELIUM, HELIUM),
+	LennardJonesForceB(HELIUM,  ARGON),
+	LennardJonesForceB( ARGON, HELIUM),
+	LennardJonesForceB( ARGON,  ARGON)
 };
 
-const PhysVal_t POTENTIAL_CUTOFF_MAX_RADIUS          = 8 * MAXIMUM_COLLISION_RADIUS;
+const PhysVal_t LENNARD_JONES_POTENTIAL_A[TYPES_COUNT_SQR] = 
+{
+	LennardJonesPotentialA(HELIUM, HELIUM),
+	LennardJonesPotentialA(HELIUM,  ARGON),
+	LennardJonesPotentialA( ARGON, HELIUM),
+	LennardJonesPotentialA( ARGON,  ARGON)
+};
+
+const PhysVal_t LENNARD_JONES_POTENTIAL_B[TYPES_COUNT_SQR] = 
+{
+	LennardJonesPotentialB(HELIUM, HELIUM),
+	LennardJonesPotentialB(HELIUM,  ARGON),
+	LennardJonesPotentialB( ARGON, HELIUM),
+	LennardJonesPotentialB( ARGON,  ARGON)
+};
+
+const PhysVal_t POTENTIAL_CUTOFF_MAX_RADIUS          = 7 * MAXIMUM_COLLISION_RADIUS;
 const PhysVal_t POTENTIAL_CUTOFF_MAX_RADIUS_SQUAREx4 = 4 * std::pow(POTENTIAL_CUTOFF_MAX_RADIUS, 2);
 
-PhysVal_t LennardJonesForce(MoleculeType typeA, MoleculeType typeB, PhysVal_t distance);
+PhysVal_t LennardJonesForce    (MoleculeType typeA, MoleculeType typeB, PhysVal_t distance);
+PhysVal_t LennardJonesPotential(MoleculeType typeA, MoleculeType typeB, PhysVal_t distance);
+
 
 #endif // GAS_MODEL_MOLECULE_TYPES_HPP_INCLUDED

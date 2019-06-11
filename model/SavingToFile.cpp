@@ -22,9 +22,9 @@ void DataSaver::writeFrame(const GasModel& model, const char* coordsFile, const 
 {
 	for (size_t i = 0; i < moleculeCount; ++i)
 	{
-		coords[3 * (preBufferred * moleculeCount + i) + 0] = 1000 * (model.molecules[i].coords.x/model.box.containerSize.x - 0.5);
-		coords[3 * (preBufferred * moleculeCount + i) + 1] = 1000 * (model.molecules[i].coords.y/model.box.containerSize.y - 0.5);
-		coords[3 * (preBufferred * moleculeCount + i) + 2] = 1000 * (model.molecules[i].coords.z/model.box.containerSize.z - 0.5);
+		coords[3 * (preBufferred * moleculeCount + i) + 0] = model.molecules[i].coords.x;
+		coords[3 * (preBufferred * moleculeCount + i) + 1] = model.molecules[i].coords.y;
+		coords[3 * (preBufferred * moleculeCount + i) + 2] = model.molecules[i].coords.z;
 		
 		velocities[preBufferred * moleculeCount + i] = model.molecules[i].speed.length();
 	}

@@ -19,7 +19,7 @@ void OctTreeNode::initNode(int moleculeI, int prevI, unsigned newCount, Vector n
 }
 
 //==============================================
-// GasModel CONSTRUCTION/DeSTRUCTION
+// GasModel CONSTRUCTION/DESTRUCTION
 //==============================================
 
 const size_t OCT_TREE_MAX_NODES = 4 * MAX_NUMBER_OF_MOLECULES;
@@ -33,7 +33,10 @@ GasModel::GasModel(Vector newBoxSize) :
 	octTree         (new OctTreeNode[OCT_TREE_MAX_NODES]),
 	octTreeSize     (0),
 	octTreeFuckedUp (false),
-	sizeAtDepth     (new Vector[OCT_TREE_MAX_DEPTH])
+	sizeAtDepth     (new Vector[OCT_TREE_MAX_DEPTH]),
+	prevTotalEnergy           (0.0),  // Hot-Fix
+	currPotentialEnergy       (0.0),  // Hot-Fix
+	prevTotalEnergyCalculated (false) // Hot-Fix
 {
 	if (!molecules || !octTree || !sizeAtDepth)
 	{
@@ -195,7 +198,7 @@ void GasModel::attractOneMoleculeBarnesHut(int moleculeI, int curI, unsigned dep
 
 	if (octTree[curI].count == 1)
 	{
-		moleculesAttract(molecules[moleculeI], molecules[octTree[curI].molecule]);
+		moleculesAttract(currPotentialEnergy, molecules[moleculeI], molecules[octTree[curI].molecule]);
 	}
 	else
 	{
@@ -214,7 +217,7 @@ void GasModel::interactWithEachOtherNaive()
 		for (size_t j = i + 1; j < moleculeCount; ++j)
 		{
 			moleculesCollide(molecules[i], molecules[j]);
-			moleculesAttract(molecules[i], molecules[j]);
+			moleculesAttract(currPotentialEnergy, molecules[i], molecules[j]);
 		}
 	}
 }
@@ -222,6 +225,9 @@ void GasModel::interactWithEachOtherNaive()
 void GasModel::interactWithEachOther()
 {
 	buildOctTree();
+
+	// Energy fix-up hot-fix:
+	currPotentialEnergy = 0.0;
 
 	if (octTreeFuckedUp) interactWithEachOtherNaive();
 	else
@@ -247,4 +253,29 @@ void GasModel::iterationCycle()
 
 	for (size_t i = 0; i < moleculeCount; ++i)
 		box.moleculeBounce(molecules[i]);
+}
+
+//==============================================
+// ENERGY LOSS FIX-UP
+//==============================================
+
+void GasModel::fixEnergy()
+{
+	// Calculate Fix-Up factor:
+	PhysVal_t currKineticEnergy = 0.0;
+	for (size_t i = 0; i < moleculeCount; ++i)
+		currKineticEnergy += MASSES[molecules[i].type] * molecules[i].speed.lenSqr();
+
+	if (prevTotalEnergyCalculated)
+	{
+		PhysVal_t fixupFactor = std::sqrt((prevTotalEnergy - currPotentialEnergy)/currKineticEnergy);
+
+		for (size_t i = 0; i < moleculeCount; ++i) 
+			molecules[i].speed *= fixupFactor;
+	}
+
+	prevTotalEnergy = currKineticEnergy + currPotentialEnergy;
+	currPotentialEnergy = 0.0;
+
+	prevTotalEnergyCalculated = true;
 }

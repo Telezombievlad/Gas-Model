@@ -10,7 +10,7 @@ struct Molecule
 public:
 	Vector coords;
 	Vector speed;
-	Vector acceleration;
+	Vector force;
 	MoleculeType type;
 
 	Molecule() = default;
@@ -21,6 +21,7 @@ public:
 };
 
 void moleculesCollide(Molecule& molA, Molecule& molB);
-void moleculesAttract(Molecule& molA, Molecule& molB);
+
+void moleculesAttract(PhysVal_t& potEnergy, Molecule& molA, Molecule& molB);
 
 #endif // GAS_MODEL_MOLECULE_HPP_INCLUDED
