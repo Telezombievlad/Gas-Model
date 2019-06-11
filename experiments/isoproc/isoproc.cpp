@@ -2,8 +2,8 @@
 #include <random>
 #include <cmath>
 
-#include "Model.h"
-#include "Dimensioning.h"
+#include "Model.hpp"
+#include "Dimensioning.hpp"
 
 std::pair<int, int> count_index(size_t molecule_id, const GasModel& model, int max_depth) {
 
@@ -123,6 +123,7 @@ int main() {
 
 		model.addMolecule(coord, speed);
 	}
+<<<<<<< HEAD
   model.buildOctTree();
 
   // Main action baby
@@ -161,6 +162,5 @@ int main() {
       delete[] temp;
     }
   }
-
   return 0;
 }

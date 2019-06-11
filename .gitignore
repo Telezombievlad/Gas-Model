@@ -1,0 +1,9 @@
+model/Model_BETTER_SSE.hpp
+model/Model_HARDCORE.hpp
+model/Model_SQUARE.hpp
+model/Model_SSE.hpp
+res
+optimization
+.ipynb_checkpoints
+model/bin
+*.mp4
