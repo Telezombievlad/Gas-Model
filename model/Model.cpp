@@ -133,7 +133,7 @@ void GasModel::move()
 	tick = (tick + 1) % 2;
 }
 
-inline char GasModel::calculateOct(size_t moleculeI, int curI) const
+char GasModel::calculateOct(size_t moleculeI, int curI) const
 {
 	return ((coords[moleculeI].x > octTree[curI].center.x) ? 4 : 0) +
 	       ((coords[moleculeI].y > octTree[curI].center.y) ? 2 : 0) +
