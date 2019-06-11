@@ -42,7 +42,7 @@ ${SRC}/bin/unity.o : ${HEADERS} ${SOURCES}
 ${SRC}/bin/libmodel.so : ${SRC}/bin/unity.o
 	g++ -fPIC -shared ${CCFLAGS} -o ${SRC}/bin/libmodel.so ${SRC}/bin/unity.o
 
-buildlib: ${SRC}/bin/libmodel.so         
+buildlib: ${SRC}/bin/libmodel.so
 	@ echo "Library compiled!"
 
 LINK_TO_CNPY_FLAGS = -L/usr/local -lcnpy -lz
@@ -93,7 +93,7 @@ ENERGY_DISLAY_EVERY = 1
 energy : energy_compile
 	${ENERGY_EXE} ${ENERGY_MOLECULES} ${ENERGY_STEPS} ${ENERGY_DISLAY_EVERY}
 
-demo_energy : 
+demo_energy :
 	echo "Energy visualization not done yet"
 
 ######### Iso Processes #########
