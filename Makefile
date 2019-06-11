@@ -54,7 +54,7 @@ LINK_TO_MODEL = -L${SRC_ABS}/bin -Wl,-rpath=${SRC_ABS}/bin -lmodel
 
 VISUALIZE_SCRIPT = visualization/mol_vis.py
 
-RENDER_MODE = --cubesize 500 --realtime 1
+RENDER_MODE = --cubesize 1000x1000x1000 --realtime 1 --showtemp 0
 
 #==================================================================================================
 # EXPERIMENTS
@@ -130,7 +130,7 @@ diffusion : diffusion_compile
 	${DIFF_EXE} ${DIFF_ARGS}
 
 diffusion_visualize :
-	python3 ${VISUALIZE_SCRIPT} ${RENDER_MODE} ${DIFF_COORDS} ${DIFF_VELOCITIES}
+	python3 ${VISUALIZE_SCRIPT} ${DIFF_COORDS} ${DIFF_VELOCITIES} ${DIFF_TYPES} ${RENDER_MODE}
 
 #==================================================================================================
 # OPTIMIZATION

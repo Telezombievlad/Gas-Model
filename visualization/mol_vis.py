@@ -7,18 +7,44 @@ import vispy
 from vispy import scene
 import numpy as np
 
-class Updater:
-    def __init__(self, frames, colors, points, cm):
-        self.frames = frames
-        self.colors = colors
-        self.points = points
+COLORS_ENUM = [(0.4, 0.4, 1), (1, 1, 0)]
+
+class ColorSetter:
+    def __init__(self, colors, cm=None):
+        if len(colors.shape) == 2:
+            self.each_f = True
+            self.colors = colors
+        else:
+            self.each_f = False
+            self.colors = np.array(list(map(lambda x: COLORS_ENUM[int(x)], colors)))
         self.cm = cm
+
+    def __getitem__(self, i):
+        if self.each_f:
+            return self.cm.map(self.colors[i])
+        else:
+            return self.colors
+
+class Updater:
+    def __init__(self, frames, color_setter, sizes, points):
+        self.frames = frames
+        self.color_setter = color_setter
+        self.points = points
         self.i = 1
+        self.sizes = sizes
 
     def update(self, ev):
-        self.points.set_data(self.frames[self.i], face_color=self.cm.map(self.colors[self.i]))
-        self.i += 1
+        try:
+            self.points.set_data(self.frames[self.i], face_color=self.color_setter[self.i], size=self.sizes)
+            self.i += 1
+        except:
+            self.i = 0
 
+def get_size(mol_type):
+    if mol_type == 0:
+        return 1.28 * 3
+    elif mol_type == 1:
+        return 1.91 * 3
 
 if __name__ == '__main__':
 
@@ -30,23 +56,32 @@ if __name__ == '__main__':
 
     parser.add_argument('frames', help='NumPy array of points coordinates.')
     parser.add_argument('colors', help='NumPy array of points velocities.')
+    parser.add_argument('types', help='NumPy array of points velocities.')
     parser.add_argument('--fps', default=20, type=int)
     parser.add_argument('-r', '--realtime', default=True, type=int)
+    parser.add_argument('-t', '--showtemp', default=True, type=int)
     parser.add_argument('--rotateangle', default=3., type=float)
-    parser.add_argument('--cubesize', default=100, type=int)
+    parser.add_argument('--cubesize', default='1000x1000x1000', type=str)
 
     args = parser.parse_args()
 
-    if args.frames is None or args.colors is None:
+    if (args.frames is None) or (args.colors is None) or (args.types is None):
         raise Exception('No files provided')
 
     # Load and transform data
 
     frames = np.load( args.frames )
     colors = np.load( args.colors )
+    types = np.load( args.types )
+    sizes = np.array([get_size(x) for x in types])
 
     colors /= colors.max()
     cm = vispy.color.Colormap(['lightblue', 'lightgreen', 'lightyellow', 'orange', 'red'], [0, 0.1, 0.3, 0.4, 1])
+
+    if args.showtemp:
+        color_setter = ColorSetter(colors, cm)
+    else:
+        color_setter = ColorSetter(types, cm)
 
     # Bureaucracy
 
@@ -62,10 +97,10 @@ if __name__ == '__main__':
     # Real thing
 
     molecules = scene.visuals.Markers(parent=view.scene)
-    molecules.set_data(frames[0], face_color=cm.map(colors[0]))
+    molecules.set_data(frames[0], face_color=color_setter[0], size=sizes)
 
-    cz = args.cubesize
-    borders = scene.visuals.Cube((cz, cz, cz), color=[0.1, 0.1, 0.1, 0.1],
+    x_m, y_m, z_m = list(map(int, args.cubesize.split("x")))
+    borders = scene.visuals.Cube((x_m, y_m, z_m), color=[0.1, 0.1, 0.1, 0.1],
                                edge_color='black', parent=view.scene)
 
     ## Interactive animation
@@ -73,7 +108,7 @@ if __name__ == '__main__':
 
         molecules.events.update.connect(lambda evt: win.update)
 
-        upd = Updater(frames, colors, molecules, cm)
+        upd = Updater(frames, color_setter, sizes, molecules)
 
         timer = vispy.app.Timer()
         timer.connect(upd.update)
@@ -81,6 +116,7 @@ if __name__ == '__main__':
 
         if sys.flags.interactive != 1:
             vispy.app.run()
+
 
     ## Video creation
     else:
@@ -96,6 +132,6 @@ if __name__ == '__main__':
 
             view.camera.transform.rotate(args.rotateangle, axis)
 
-            molecules.set_data(frames[i], face_color=cm.map(colors[i]))
+            molecules.set_data(frames[i], face_color=color_setter[i], size=sizes)
 
-writer.close()
+        writer.close()
