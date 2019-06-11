@@ -95,14 +95,14 @@ if __name__ == '__main__':
     view.camera.set_range(x=[-coor_rang, coor_rang], y=[-coor_rang, coor_rang], z=[-coor_rang, coor_rang])
 
     # Real thing
-
+    x_m, y_m, z_m = list(map(int, args.cubesize.split("x")))
+    frames -= np.array([x_m/2, y_m/2, z_m/2])
+    
     molecules = scene.visuals.Markers(parent=view.scene)
     molecules.set_data(frames[0], face_color=color_setter[0], size=sizes)
 
-    x_m, y_m, z_m = list(map(int, args.cubesize.split("x")))
-    borders = scene.visuals.Cube((x_m, y_m, z_m), color=[0.1, 0.1, 0.1, 0.1],
+    borders = scene.visuals.Cube((x_m/2, y_m/2, z_m/2), color=[0.1, 0.1, 0.1, 0.1],
                                edge_color='black', parent=view.scene)
-
     ## Interactive animation
     if args.realtime:
 
