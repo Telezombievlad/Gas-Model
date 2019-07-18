@@ -33,18 +33,22 @@ class Updater:
         self.i = 1
         self.sizes = sizes
 
-    def update(self, ev):
+    def update(self, koeff):
         try:
-            self.points.set_data(self.frames[self.i], face_color=self.color_setter[self.i], size=self.sizes)
+            self.points.set_data(self.frames[self.i], 
+                                 face_color     = self.color_setter[self.i],
+                                 size           = self.sizes*koeff,
+                                 edge_width     = None,
+                                 edge_width_rel = 0.08)
             self.i += 1
         except:
             self.i = 0
 
 def get_size(mol_type):
     if mol_type == 0:
-        return 1.28 * 3
+        return 1.28
     elif mol_type == 1:
-        return 1.91 * 3
+        return 1.91
 
 if __name__ == '__main__':
 
@@ -62,6 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--showtemp', default=True, type=int)
     parser.add_argument('--rotateangle', default=3., type=float)
     parser.add_argument('--cubesize', default='1000x1000x1000', type=str)
+    parser.add_argument('--koeff', default=1.0, type=float)
 
     args = parser.parse_args()
 
@@ -91,7 +96,7 @@ if __name__ == '__main__':
     view = win.central_widget.add_view()
     view.camera = 'arcball'
 
-    coor_rang = np.abs(frames).max() * 1.3
+    coor_rang = np.abs(frames).max() * 1
     view.camera.set_range(x=[-coor_rang, coor_rang], y=[-coor_rang, coor_rang], z=[-coor_rang, coor_rang])
 
     # Real thing
@@ -104,6 +109,7 @@ if __name__ == '__main__':
     borders = scene.visuals.Cube((x_m/2, y_m/2, z_m/2), color=[0.1, 0.1, 0.1, 0.1],
                                edge_color='black', parent=view.scene)
     ## Interactive animation
+
     if args.realtime:
 
         molecules.events.update.connect(lambda evt: win.update)
@@ -111,7 +117,7 @@ if __name__ == '__main__':
         upd = Updater(frames, color_setter, sizes, molecules)
 
         timer = vispy.app.Timer()
-        timer.connect(upd.update)
+        timer.connect(lambda ev: upd.update(args.koeff * 1650 / view.camera.scale_factor))
         timer.start(interval=1/args.fps)
 
         if sys.flags.interactive != 1:

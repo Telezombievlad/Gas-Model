@@ -8,13 +8,16 @@
 // SIMULATION PROPERTIES                        
 //==============================================
 
-#define IDEAL     0
-#define BOUNCY    1
-#define POTENTIAL 2
-#define GAS_TYPE POTENTIAL
+// Gas Types:
+// IDEAL
+// BOUNCY
+// POTENTIAL
+#define POTENTIAL
 
-const size_t MAX_NUMBER_OF_MOLECULES = 20000;
+const size_t MAX_NUMBER_OF_MOLECULES = 50000;
+
 using PhysVal_t = double;
+const PhysVal_t GRAVITY = 0.00005;
 
 //==============================================
 

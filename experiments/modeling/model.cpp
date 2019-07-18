@@ -7,7 +7,12 @@
 
 #include <fenv.h>
 
-int main(int argc, char* argv[])
+const size_t MOLECULES        = 20000;
+const size_t ITERATIONS       = 10000;
+const size_t SAVE_FRAME_EVERY = 5; 
+const size_t FIX_T_EVERY      = 100;
+
+int main(int argc, char* argv[])  
 {
 	if (argc != 4)
 	{
@@ -17,26 +22,30 @@ int main(int argc, char* argv[])
 	}
 
 	// Model
-	GasModel model = GasModel({SAS_2_Model(1e3, 0, 1, 0),
-	                           SAS_2_Model(1e3, 0, 1, 0),
-	                           SAS_2_Model(1e3, 0, 1, 0)});
+	const PhysVal_t BOX_SIZE = SAS_2_Model(2e2, 0, 1, 0);
+	GasModel model = GasModel({BOX_SIZE, BOX_SIZE, BOX_SIZE});
 
 	// A bit of code that saves model to file
-	DataSaver saver{MAX_NUMBER_OF_MOLECULES};
+	DataSaver saver{MOLECULES};
 
 	// Generating speeds from a distribution:
 	std::random_device rd;
 	std::mt19937 gen{rd()};
 
-	std::normal_distribution<PhysVal_t>       speeds1{SAS_2_Model( 0.0, -1, 1, 0), SAS_2_Model(2.5e13, -1, 1, 0)};
-	std::uniform_real_distribution<PhysVal_t> coords1{SAS_2_Model( 5.0,  0, 1, 0), SAS_2_Model(  10.0,  0, 1, 0)};
-	std::uniform_real_distribution<PhysVal_t> coords2{SAS_2_Model(50.0,  0, 1, 0), SAS_2_Model(   1e3,  0, 1, 0)};
+	static const PhysVal_t BOLTZMANN_K       = 1.38e-23;
+	static const PhysVal_t ATOMIC_MASS_IN_KG = 1.67e-27;
+	const PhysVal_t TEMPERATURE              = 300/*K*/;
+	const PhysVal_t sigmaHe = SAS_2_Model(std::sqrt(BOLTZMANN_K*TEMPERATURE/(ATOMIC_MASS_IN_KG*MASSES[ARGON])) * 1e10, -1, 1, 0);
+
+	std::normal_distribution<PhysVal_t>       speeds  {0.0, sigmaHe};
+	std::uniform_real_distribution<PhysVal_t> coordsZ {0.0, BOX_SIZE};
+	std::uniform_real_distribution<PhysVal_t> coordsXY{0.0, BOX_SIZE};
 
 	// Filling array of molecules
-	for (size_t i = 0; i < MAX_NUMBER_OF_MOLECULES; ++i)
+	for (size_t i = 0; i < MOLECULES; ++i)
 	{
-		Vector speed = Vector(speeds1(gen), speeds1(gen), speeds1(gen));
-		Vector coord = Vector(coords1(gen), coords2(gen), coords2(gen));
+		Vector speed = Vector(speeds  (gen), speeds  (gen), speeds (gen));
+		Vector coord = Vector(coordsXY(gen), coordsXY(gen), coordsZ(gen));
 
 		model.addMolecule(Molecule(coord, speed, MoleculeType::HELIUM));
 	}
@@ -49,13 +58,20 @@ int main(int argc, char* argv[])
 	auto begin = clock.now();
 
 	// THE SIMULATION
-	for (size_t i = 0; i < 1000; ++i)
+	for (size_t iter = 0; iter < ITERATIONS; ++iter)  
 	{
-		// model.boxSize.x = 1000 + 800*sin(0.02*i);
-		
-		model.iterationCycle();
+		if (iter % FIX_T_EVERY == 0)
+			model.fixEnergy();
 
-		saver.writeFrame(model, argv[1], argv[2]);
+		if (iter % SAVE_FRAME_EVERY == 0)
+		{
+			printf("\r[MODEL] %03zu%%", 100*iter/ITERATIONS);
+			std::fflush(stdout);
+
+			saver.writeFrame(model, argv[1], argv[2]);
+		}
+
+		model.iterationCycle();
 	}
 
 	auto end = clock.now();

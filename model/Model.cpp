@@ -8,12 +8,12 @@
 // OctTreeNode IMPLEMENTATION
 //==============================================
 
-void OctTreeNode::initNode(int moleculeI, int prevI, unsigned newCount, Vector newCenter)
+void OctTreeNode::initNode(int moleculeI, int prevI, unsigned newCount, Vector newCenter) 
 {
-	for (size_t i = 0; i < 8; ++i) octs[i] = -1;
+	for (size_t i = 0; i < 8; ++i) octs[i] = -1; 
 
-	prev = prevI;
-	molecule = moleculeI;
+	prev = prevI; 
+	molecule = moleculeI; 
 	count = newCount;
 	center = newCenter;
 }
@@ -139,8 +139,8 @@ void GasModel::buildOctTree()
 				if (octTreeFuckedUp) return;
 
 				oct    = calculateOct(   moleculeI, prevI);
-				oldOct = calculateOct(oldMoleculeI, prevI);
-
+				oldOct = calculateOct(oldMoleculeI, prevI);  
+ 
 				++depth;
 			}
 
@@ -264,7 +264,11 @@ void GasModel::fixEnergy()
 	// Calculate Fix-Up factor:
 	PhysVal_t currKineticEnergy = 0.0;
 	for (size_t i = 0; i < moleculeCount; ++i)
+	{
+		currPotentialEnergy += MASSES[molecules[i].type] * GRAVITY * molecules[i].coords.z;
+
 		currKineticEnergy += MASSES[molecules[i].type] * molecules[i].speed.lenSqr();
+	}
 
 	if (prevTotalEnergyCalculated)
 	{

@@ -10,11 +10,11 @@
 
 const PhysVal_t TEMPERATURE      = 300/*K*/;
 const size_t    MOLECULES        = MAX_NUMBER_OF_MOLECULES;
-const size_t    ITERATIONS       = 10000;
-const size_t    SAVE_FRAME_EVERY = 10;
+const size_t    ITERATIONS       = 100000;
+const size_t    SAVE_FRAME_EVERY = 100;
 const size_t    SAVE_DATA_EVERY  = 100;
 const size_t    BIN_COUNT        = 10;
-const size_t    FIX_T_EVERY      = 100;
+const size_t    FIX_T_EVERY      = 100; 
 
 int main(int argc, char* argv[])
 {
@@ -28,8 +28,8 @@ int main(int argc, char* argv[])
 	}
 
 	// Model
-	const PhysVal_t ACTUAL_BOX_SIZE_X  = 5e3;
-	const PhysVal_t ACTUAL_BOX_SIZE_YZ = 1e3;
+	const PhysVal_t ACTUAL_BOX_SIZE_X  = 1e4;
+	const PhysVal_t ACTUAL_BOX_SIZE_YZ = 2e3;
 	const PhysVal_t ACTUAL_BOX_VOLUME  = ACTUAL_BOX_SIZE_X * std::pow(ACTUAL_BOX_SIZE_YZ, 2);
 	const PhysVal_t BOX_SIZE_X  = SAS_2_Model(ACTUAL_BOX_SIZE_X , 0, 1, 0);
 	const PhysVal_t BOX_SIZE_YZ = SAS_2_Model(ACTUAL_BOX_SIZE_YZ, 0, 1, 0);
@@ -86,10 +86,10 @@ int main(int argc, char* argv[])
 	}
 
 	// Stuff to analyse diffusion:
-	auto countsHeCur = std::valarray<unsigned>(BIN_COUNT);
-	auto countsHePrv = std::valarray<unsigned>(BIN_COUNT);
-	auto countsArCur = std::valarray<unsigned>(BIN_COUNT);
-	auto countsArPrv = std::valarray<unsigned>(BIN_COUNT);
+	auto countsHeCur = std::valarray<long>(BIN_COUNT);
+	auto countsHePrv = std::valarray<long>(BIN_COUNT);
+	auto countsArCur = std::valarray<long>(BIN_COUNT);
+	auto countsArPrv = std::valarray<long>(BIN_COUNT);
 
 	auto fluxesHe = std::valarray<PhysVal_t>(BIN_COUNT - 1);
 	auto fluxesAr = std::valarray<PhysVal_t>(BIN_COUNT - 1);
@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
 
 			for (size_t fluxI = 0; fluxI < BIN_COUNT-1; ++fluxI)
 			{
-				for (size_t binJ = fluxI; binJ < BIN_COUNT-1; ++binJ)
+				for (size_t binJ = fluxI+1; binJ < BIN_COUNT; ++binJ)
 				{
 					fluxesHe[fluxI] += countsHeCur[binJ] - countsHePrv[binJ];
 					fluxesAr[fluxI] += countsArCur[binJ] - countsArPrv[binJ];
@@ -150,8 +150,8 @@ int main(int argc, char* argv[])
 			fluxesHe /= std::pow(ACTUAL_BOX_SIZE_YZ, 2) * (TIME_DELTA * SAVE_DATA_EVERY);
 			fluxesAr /= std::pow(ACTUAL_BOX_SIZE_YZ, 2) * (TIME_DELTA * SAVE_DATA_EVERY);
 
-			gradsHe /= ACTUAL_BOX_VOLUME * (ACTUAL_BOX_SIZE_X / BIN_COUNT);
-			gradsAr /= ACTUAL_BOX_VOLUME * (ACTUAL_BOX_SIZE_X / BIN_COUNT);
+			gradsHe /= (ACTUAL_BOX_VOLUME / BIN_COUNT) * (ACTUAL_BOX_SIZE_X / BIN_COUNT);
+			gradsAr /= (ACTUAL_BOX_VOLUME / BIN_COUNT) * (ACTUAL_BOX_SIZE_X / BIN_COUNT);
 
 			// Saving stuff to file
 			for (size_t i = 0; i < BIN_COUNT; ++i)

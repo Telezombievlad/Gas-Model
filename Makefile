@@ -54,8 +54,6 @@ LINK_TO_MODEL = -L${SRC_ABS}/bin -Wl,-rpath=${SRC_ABS}/bin -lmodel
 
 VISUALIZE_SCRIPT = visualization/mol_vis.py
 
-RENDER_MODE = --cubesize 10000x1000x1000 --realtime 1 --showtemp 0
-
 #==================================================================================================
 # EXPERIMENTS
 #==================================================================================================
@@ -65,36 +63,19 @@ RENDER_MODE = --cubesize 10000x1000x1000 --realtime 1 --showtemp 0
 MODEL_EXE = experiments/modeling/model
 MODEL_SRC = experiments/modeling/model.cpp
 
-MODEL_COORDS     = experiments/modeling/coords.npy
-MODEL_VELOCITIES = experiments/modeling/velocities.npy
-MODEL_TYPES      = experiments/modeling/types.npy
-
 model_compile : ${MODEL_SRC} ${SRC}/bin/libmodel.so
 	g++ ${CCFLAGS} ${MODEL_SRC} -I${SRC} -o ${MODEL_EXE} ${LINK_TO_MODEL} ${LINK_TO_CNPY_FLAGS}
+
+MODEL_COORDS     = experiments/modeling/1_coords.npy
+MODEL_VELOCITIES = experiments/modeling/1_velocities.npy
+MODEL_TYPES      = experiments/modeling/1_types.npy
 
 model : model_compile
 	rm -f ${MODEL_COORDS} ${MODEL_VELOCITIES} ${MODEL_TYPES}
 	${MODEL_EXE} ${MODEL_COORDS} ${MODEL_VELOCITIES} ${MODEL_TYPES}
 
 model_visualize :
-	python3 ${VISUALIZE_SCRIPT} ${RENDER_MODE} ${MODEL_COORDS} ${MODEL_VELOCITIES}
-
-######### Energy conservation #########
-
-ENERGY_EXE = experiments/energy/energy
-ENERGY_SRC = experiments/energy/energy.cpp
-
-energy_compile : ${ENERGY_SRC} ${SRC}/bin/libmodel.so
-	g++ ${CCFLAGS} ${ENERGY_SRC} -I${SRC} -I${SRC}/vendor/cnpy -o ${ENERGY_EXE} ${LINK_TO_MODEL} ${LINK_TO_CNPY_FLAGS}
-
-ENERGY_MOLECULES    = 10000
-ENERGY_STEPS        = 1000
-ENERGY_DISLAY_EVERY = 1
-energy : energy_compile
-	${ENERGY_EXE} ${ENERGY_MOLECULES} ${ENERGY_STEPS} ${ENERGY_DISLAY_EVERY}
-
-demo_energy :
-	echo "Energy visualization not done yet"
+	python3 ${VISUALIZE_SCRIPT} --cubesize 200x200x200 --realtime 1 --showtemp 1 ${MODEL_COORDS} ${MODEL_VELOCITIES} ${MODEL_TYPES}
 
 ######### Iso Processes #########
 
@@ -103,6 +84,7 @@ PROCESS_SRC = experiments/isoproc/isoproc.cpp
 
 iso_compile: ${PROCESS_SRC} ${SRC}/bin/libmodel.so
 	g++ ${CCFLAGS} ${PROCESS_SRC} -I${SRC} -I${SRC}/vendor/cnpy -o ${PROCESS_EXE} ${LINK_TO_MODEL} ${LINK_TO_CNPY_FLAGS}
+
 
 ######### Diffusion #########
 
@@ -122,37 +104,95 @@ DIFF_GRADS_AR   = experiments/diffusion/gradsAr.npy
 diffusion_compile : ${DIFF_SRC} ${SRC}/bin/libmodel.so
 	g++ -g ${CCFLAGS} ${DIFF_SRC} -I${SRC} -I${SRC}/vendor/cnpy -o ${DIFF_EXE} ${LINK_TO_MODEL} ${LINK_TO_CNPY_FLAGS}
 
-DIFF_ARGS_1 = ${DIFF_COORDS}_1 ${DIFF_VELOCITIES}_1 ${DIFF_TYPES}_1    \
-            ${DIFF_CONC_HE}_1 ${DIFF_CONC_AR}_1 ${DIFF_FLUXES_HE}_1  \
-            ${DIFF_FLUXES_AR}_1 ${DIFF_GRADS_HE}_1 ${DIFF_GRADS_AR}_1
-DIFF_ARGS_2 = ${DIFF_COORDS}_2 ${DIFF_VELOCITIES}_2 ${DIFF_TYPES}_2    \
-            ${DIFF_CONC_HE}_2 ${DIFF_CONC_AR}_2 ${DIFF_FLUXES_HE}_2  \
-            ${DIFF_FLUXES_AR}_2 ${DIFF_GRADS_HE}_2 ${DIFF_GRADS_AR}_2
-DIFF_ARGS_3 = ${DIFF_COORDS}_3 ${DIFF_VELOCITIES}_3 ${DIFF_TYPES}_3    \
-            ${DIFF_CONC_HE}_3 ${DIFF_CONC_AR}_3 ${DIFF_FLUXES_HE}_3  \
-            ${DIFF_FLUXES_AR}_3 ${DIFF_GRADS_HE}_3 ${DIFF_GRADS_AR}_3
-DIFF_ARGS_4 = ${DIFF_COORDS}_4 ${DIFF_VELOCITIES}_4 ${DIFF_TYPES}_4    \
-            ${DIFF_CONC_HE}_4 ${DIFF_CONC_AR}_4 ${DIFF_FLUXES_HE}_4  \
-            ${DIFF_FLUXES_AR}_4 ${DIFF_GRADS_HE}_4 ${DIFF_GRADS_AR}_4
+DIFF_ARGS = ${DIFF_COORDS} ${DIFF_VELOCITIES} ${DIFF_TYPES}    \
+            ${DIFF_CONC_HE} ${DIFF_CONC_AR} ${DIFF_FLUXES_HE}  \
+            ${DIFF_FLUXES_AR} ${DIFF_GRADS_HE} ${DIFF_GRADS_AR}
 
-diffusion_1 : diffusion_compile
-	rm -f ${DIFF_ARGS_1}
-	${DIFF_EXE} ${DIFF_ARGS_1}
-
-diffusion_2 : diffusion_compile
-	rm -f ${DIFF_ARGS_2}
-	${DIFF_EXE} ${DIFF_ARGS_2}
-
-diffusion_3 : diffusion_compile
-	rm -f ${DIFF_ARGS_3}
-	${DIFF_EXE} ${DIFF_ARGS_3}
-
-diffusion_4 : diffusion_compile
-	rm -f ${DIFF_ARGS_4}
-	${DIFF_EXE} ${DIFF_ARGS_4}
+diffusion : diffusion_compile
+	rm -f ${DIFF_ARGS}
+	${DIFF_EXE} ${DIFF_ARGS}
 
 diffusion_visualize :
-	python3 ${VISUALIZE_SCRIPT} ${DIFF_COORDS} ${DIFF_VELOCITIES} ${DIFF_TYPES} ${RENDER_MODE}
+	python3 ${VISUALIZE_SCRIPT} ${DIFF_COORDS} ${DIFF_VELOCITIES} ${DIFF_TYPES} --cubesize 5000x1000x1000 --realtime 1 --showtemp 0 --koeff 7
+
+######### Energy conservation #########
+
+ENERGY_EXE = experiments/energy/energy
+ENERGY_SRC = experiments/energy/energy.cpp
+
+energy_compile : ${ENERGY_SRC} ${SRC}/bin/libmodel.so
+	g++ ${CCFLAGS} ${ENERGY_SRC} -I${SRC} -I${SRC}/vendor/cnpy -o ${ENERGY_EXE} ${LINK_TO_MODEL} ${LINK_TO_CNPY_FLAGS}
+
+ENERGY_MOLECULES    = 10000
+ENERGY_STEPS        = 1000
+ENERGY_DISLAY_EVERY = 1
+energy : energy_compile
+	${ENERGY_EXE} ${ENERGY_MOLECULES} ${ENERGY_STEPS} ${ENERGY_DISLAY_EVERY}
+
+energy_visualize :
+	echo "Energy visualization not done yet"
+
+#==================================================================================================
+# DEMOS
+#==================================================================================================
+
+######### Lennard-Jones Diffusion #########
+
+DIFF_POTENTIAL_COORDS     = experiments/diffusion/POTENTIAL_coords.npy
+DIFF_POTENTIAL_VELOCITIES = experiments/diffusion/POTENTIAL_velocities.npy
+DIFF_POTENTIAL_TYPES      = experiments/diffusion/POTENTIAL_types.npy
+
+demo_diffusion_potential :
+	python3 ${VISUALIZE_SCRIPT} ${DIFF_POTENTIAL_COORDS} ${DIFF_POTENTIAL_VELOCITIES} ${DIFF_POTENTIAL_TYPES} --cubesize 5000x1000x1000 --realtime 1 --showtemp 0 --koeff 7
+
+video_diffusion_potential :
+	python3 ${VISUALIZE_SCRIPT} ${DIFF_POTENTIAL_COORDS} ${DIFF_POTENTIAL_VELOCITIES} ${DIFF_POTENTIAL_TYPES} --cubesize 5000x1000x1000 --realtime 0 --showtemp 0 --koeff 7
+
+######### Bouncy-Ball Diffusion #########
+
+DIFF_BOUNCY_COORDS     = experiments/diffusion/BOUNCY_coords.npy
+DIFF_BOUNCY_VELOCITIES = experiments/diffusion/BOUNCY_velocities.npy
+DIFF_BOUNCY_TYPES      = experiments/diffusion/BOUNCY_types.npy
+
+demo_diffusion_bouncy :
+	python3 ${VISUALIZE_SCRIPT} ${DIFF_BOUNCY_COORDS} ${DIFF_BOUNCY_VELOCITIES} ${DIFF_BOUNCY_TYPES} --cubesize 5000x1000x1000 --realtime 0 --showtemp 0 --koeff 7
+
+######### Floating Liquid #########
+
+LIQUID_COORDS     = experiments/modeling/LIQUID_coords.npy
+LIQUID_VELOCITIES = experiments/modeling/LIQUID_velocities.npy
+LIQUID_TYPES      = experiments/modeling/LIQUID_types.npy
+
+demo_liquid :
+	python3 ${VISUALIZE_SCRIPT} --cubesize 100x100x100 --realtime 1 --showtemp 0 ${LIQUID_COORDS} ${LIQUID_VELOCITIES} ${LIQUID_TYPES}
+
+video_liquid :
+	python3 ${VISUALIZE_SCRIPT} --cubesize 100x100x100 --realtime 0 --showtemp 0 ${LIQUID_COORDS} ${LIQUID_VELOCITIES} ${LIQUID_TYPES}
+
+
+######### Liquid In Gravitational  #########
+
+GRAVITY_COORDS     = experiments/modeling/GRAVITY_coords.npy
+GRAVITY_VELOCITIES = experiments/modeling/GRAVITY_velocities.npy
+GRAVITY_TYPES      = experiments/modeling/GRAVITY_types.npy
+
+demo_gravity :
+	python3 ${VISUALIZE_SCRIPT} --cubesize 200x200x200 --realtime 1 --showtemp 1 ${GRAVITY_COORDS} ${GRAVITY_VELOCITIES} ${GRAVITY_TYPES}
+
+video_gravity :
+	python3 ${VISUALIZE_SCRIPT} --cubesize 200x200x200 --realtime 0 --showtemp 1 ${GRAVITY_COORDS} ${GRAVITY_VELOCITIES} ${GRAVITY_TYPES}
+
+######### 50000 Bouncy-Ball Wave  #########
+
+WAVES_COORDS     = experiments/modeling/WAVES_coords.npy
+WAVES_VELOCITIES = experiments/modeling/WAVES_velocities.npy
+WAVES_TYPES      = experiments/modeling/WAVES_types.npy
+
+demo_waves :
+	python3 ${VISUALIZE_SCRIPT} --fps 15 --cubesize 150x150x150 --realtime 1 --showtemp 1 ${WAVES_COORDS} ${WAVES_VELOCITIES} ${WAVES_TYPES}
+
+video_waves :
+	python3 ${VISUALIZE_SCRIPT} --fps 15 --cubesize 150x150x150 --realtime 0 --showtemp 1 ${WAVES_COORDS} ${WAVES_VELOCITIES} ${WAVES_TYPES}
 
 #==================================================================================================
 # OPTIMIZATION
@@ -168,3 +208,10 @@ compile_debug : ${MODEL_SRC} ${MODEL_HDRS}
 profile : compile_debug
 	rm -f ${RES_COORDS} ${RES_VELOCITIES} ${RES_TYPES}
 	valgrind --tool=callgrind --dump-instr=yes --collect-jumps=yes ${MODEL_EXE} ${RES_COORDS} ${RES_VELOCITIES} ${RES_TYPES}
+
+#==================================================================================================
+# MISCELLANEOUS
+#==================================================================================================
+
+clean:
+	rm -f ${SRC}/bin/unity.o ${SRC}/bin/libmodel.so experiments/modeling/model
